@@ -1,0 +1,63 @@
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const tableBody = document.querySelector('#dataTable tbody');
+
+    const validation = new JustValidate('#dataForm');
+
+    validation
+        .addField('.nik', [
+            {
+                rule: 'required',
+                errorMessage: 'NIK wajib diisi!',
+            },
+            {
+                rule: 'minLength',
+                value: 8,
+                errorMessage: 'NIK harus minimal 8 karakter!',
+            },
+            {
+                rule: 'number',
+                errorMessage: 'NIK hanya boleh berisi angka!',
+            },
+        ])
+        .addField('.name', [
+            {
+                rule: 'required',
+                errorMessage: 'Nama wajib diisi!',
+            },
+            {
+                rule: 'minLength',
+                value: 3,
+                errorMessage: 'Nama harus minimal 3 karakter!',
+            },
+        ])
+        .onSuccess(async (event) => {
+            event.preventDefault();
+
+            const nikValue = document.querySelector('.nik').value;
+            const nameValue = document.querySelector('.name').value;
+
+            try {
+                const response = await axios.post('save-data.php', {
+                    nik: nikValue,
+                    name: nameValue,
+                });
+
+                if (response.data.success) {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${tableBody.rows.length + 1}</td>
+                        <td>${response.data.data.nik}</td>
+                        <td>${response.data.data.name}</td>
+                    `;
+                    tableBody.appendChild(newRow);
+                    event.target.reset();
+                } else {
+                    alert('Gagal menyimpan data!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menyimpan data.');
+            }
+        });
+</script>
